@@ -9,3 +9,37 @@
  * 
  * To register a constrol simmessages, use addSimMessageHandler
  */
+
+document.addEventListener("DOMContentLoaded", async function () {
+
+    try {
+        const simFrame = await waitForExist(document, "#simframe");
+        simFrame.addEventListener('load', async () => {
+            const gameScreen = await waitForExist(simFrame.contentWindow.document, "#game-screen");
+            gameScreen.addEventListener("mousemove", ev => {
+                simFrame.contentWindow.postMessage({
+                    type: 'messagepacket',
+                    channel: 'mouse',
+                    data: {
+                        type: 'move',
+                        x: ev.offsetX,
+                        y: ev.offsety
+                    }
+                }, "*");
+            });
+        });
+    } catch (e) {
+        console.log(e.toString());
+    }
+});
+
+async function waitForExist(doc, selector) {
+    return new Promise((resolve, reject) => {
+        const getSimFrame = () => {
+            let elem = doc.querySelector(selector);
+            if (elem) return resolve(elem);
+            window.setTimeout(getSimFrame, 500);
+        };
+        getSimFrame();
+    });
+}
